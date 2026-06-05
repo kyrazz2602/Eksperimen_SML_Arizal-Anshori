@@ -1,0 +1,51 @@
+name: Auto Preprocessing
+
+on:
+  push:
+    branches: [ main ]          # trigger saat push ke main
+  workflow_dispatch:             # trigger manual dari tab Actions
+  schedule:
+    - cron: '0 0 * * 1'        # trigger otomatis setiap Senin pukul 00:00 UTC
+
+jobs:
+  preprocessing:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      # 1. Ambil isi repository
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2. Siapkan Python
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      # 3. Install library yang dibutuhkan
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      # 4. Jalankan script preprocessing
+      - name: Run preprocessing
+        run: python preprocessing/automate_Arizal-Anshori.py
+
+      # 5. Simpan hasil ke repository (commit otomatis)
+      - name: Commit preprocessed dataset
+        run: |
+          git config --global user.name  "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add preprocessing/heart_disease_preprocessing.csv
+          git diff --staged --quiet || git commit -m "chore: update preprocessed dataset [skip ci]"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # 6. Upload hasil sebagai Actions Artifact (bisa diunduh dari tab Actions)
+      - name: Upload preprocessed artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: preprocessed-dataset
+          path: preprocessing/heart_disease_preprocessing.csv
