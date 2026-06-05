@@ -31,7 +31,7 @@ def save_data(df, output_path):
     print(f"Dataset tersimpan di: {output_path}")
 
 def main():
-    input_path  = "heart_disease.csv"
+    input_path  = "heart_disease_raw.csv"
     output_path = "preprocessing/heart_disease_preprocessing.csv"
 
     df = load_data(input_path)
